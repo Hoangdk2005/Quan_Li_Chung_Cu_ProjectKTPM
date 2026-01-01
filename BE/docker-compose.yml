@@ -1,0 +1,21 @@
+
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: apartment_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: apartment_mgmt
+      MYSQL_USER: apartment_user
+      MYSQL_PASSWORD: apartment_pass
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init-db:/docker-entrypoint-initdb.d
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+volumes:
+  mysql_data:
