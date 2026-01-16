@@ -174,8 +174,10 @@ public class ReportServiceImpl implements ReportService {
                         .multiply(BigDecimal.valueOf(100)).doubleValue();
             }
             
-            String apartmentInfo = household.getApartment() != null 
-                    ? household.getApartment().getBlock() + "-" + household.getApartment().getFloor() + "-" + household.getApartment().getUnit()
+            String apartmentInfo = household.getApartments() != null && !household.getApartments().isEmpty()
+                    ? household.getApartments().stream()
+                            .map(apt -> apt.getBlock() + "-" + apt.getFloor() + "-" + apt.getUnit())
+                            .collect(java.util.stream.Collectors.joining(", "))
                     : "";
             
             stats.add(HouseholdPaymentStatDTO.builder()

@@ -13,8 +13,9 @@ import java.util.List;
 public class HouseholdDTO {
     private Long id;
     private String householdId;
-    private Long apartmentId;
-    private String apartmentInfo; // Block-Floor-Unit
+    private Long apartmentId; // Deprecated - giữ lại cho tương thích ngược
+    private List<Long> apartmentIds; // Danh sách ID căn hộ
+    private String apartmentInfo; // Block-Floor-Unit (nhiều căn hộ sẽ cách nhau bởi dấu phẩy)
     private String ownerName;
     private String phone;
     private String address;

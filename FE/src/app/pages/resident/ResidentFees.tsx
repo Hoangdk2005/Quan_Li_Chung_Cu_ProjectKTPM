@@ -409,7 +409,7 @@ const ResidentFees: React.FC = () => {
             <Text>Thanh toán trực tiếp tại văn phòng Ban quản lý (Tầng 1, Tòa A)</Text>
           </li>
           <li>
-            <Text>Chuyển khoản: <Text strong>Ngân hàng Vietcombank - STK: 1234567890 - CTK: BQL Chung cư BlueSky</Text></Text>
+            <Text>Chuyển khoản: <Text strong>Ngân hàng Vietcombank - STK: 1234567890 - CTK: BQL Chung cư BlueMoon</Text></Text>
           </li>
           <li>
             <Text>Nội dung chuyển khoản: <Text code>[Mã căn hộ] - [Họ tên chủ hộ] - [Kỳ thanh toán]</Text></Text>

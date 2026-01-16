@@ -1,6 +1,6 @@
 
 -- ============================================================
--- DATABASE: Quản lý Chung cư BlueSky
+-- DATABASE: Quản lý Chung cư BlueMoon
 -- Phiên bản: 2.0 (Đồng bộ với Frontend)
 -- Ngày cập nhật: 2025-12-26
 -- ============================================================
@@ -279,7 +279,7 @@ ON DUPLICATE KEY UPDATE name = VALUES(name), description = VALUES(description);
 
 -- Default Admin User (password: admin123)
 INSERT INTO users(username, password_hash, full_name, phone, email, status) VALUES
-('admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iKfBbmvl0nTXaL4i5uV.cNv0dNdq', 'Quản trị viên', '0901234567', 'admin@bluesky.vn', 'ACTIVE')
+('admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iKfBbmvl0nTXaL4i5uV.cNv0dNdq', 'Quản trị viên', '0901234567', 'admin@bluemoon.vn', 'ACTIVE')
 ON DUPLICATE KEY UPDATE full_name = VALUES(full_name);
 
 -- Assign admin role

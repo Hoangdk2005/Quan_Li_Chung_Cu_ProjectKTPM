@@ -17,6 +17,7 @@ public class NotificationDTO {
     private String targetType;
     private LocalDateTime createdDate;
     private LocalDateTime publishedAt;
+    private String imageUrl;
     private Long createdById;
     private String createdByName;
 }

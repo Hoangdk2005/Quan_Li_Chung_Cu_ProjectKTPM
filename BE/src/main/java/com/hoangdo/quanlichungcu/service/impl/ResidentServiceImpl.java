@@ -73,6 +73,13 @@ public class ResidentServiceImpl implements ResidentService {
         Resident resident = residentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Resident", "id", id));
         
+        // Kiểm tra trùng id_number với resident khác
+        if (dto.getIdNumber() != null && !dto.getIdNumber().equals(resident.getIdNumber())) {
+            if (residentRepository.existsByIdNumberAndIdNot(dto.getIdNumber(), id)) {
+                throw new BadRequestException("Số CMND/CCCD đã tồn tại cho cư dân khác.");
+            }
+        }
+        
         // Only update household if householdId is provided and different
         if (dto.getHouseholdId() != null && !resident.getHousehold().getId().equals(dto.getHouseholdId())) {
             Household newHousehold = householdRepository.findById(dto.getHouseholdId())

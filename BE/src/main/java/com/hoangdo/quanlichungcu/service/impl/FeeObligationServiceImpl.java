@@ -178,8 +178,11 @@ public class FeeObligationServiceImpl implements FeeObligationService {
     private BigDecimal calculateExpectedAmount(FeeItem feeItem, Household household) {
         switch (feeItem.getUnit()) {
             case "M2":
-                BigDecimal area = household.getApartment().getArea();
-                return area != null ? feeItem.getCost().multiply(area) : BigDecimal.ZERO;
+                // Tính tổng diện tích của tất cả các căn hộ
+                BigDecimal totalArea = household.getApartments().stream()
+                        .map(apt -> apt.getArea() != null ? apt.getArea() : BigDecimal.ZERO)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+                return feeItem.getCost().multiply(totalArea);
             case "FIXED":
                 return feeItem.getCost();
             default:

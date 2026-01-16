@@ -1,5 +1,5 @@
 -- ============================================================
--- DATABASE: Quan ly Chung cu BlueSky
+-- DATABASE: Quan ly Chung cu BlueMoon
 -- File 2: Du lieu mau
 -- ============================================================
 
@@ -12,11 +12,11 @@ INSERT INTO roles(code, name, description) VALUES
 
 -- Default Admin (password: admin123) - BCrypt hash
 INSERT INTO users(username, password_hash, full_name, phone, email, status) VALUES
-('admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iKfBbmvl0nTXaL4i5uV.cNv0dNdq', 'Quan tri vien', '0901234567', 'admin@bluesky.vn', 'ACTIVE'),
+('admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iKfBbmvl0nTXaL4i5uV.cNv0dNdq', 'Quan tri vien', '0901234567', 'admin@bluemoon.vn', 'ACTIVE'),
 -- To truong (password: totruong123)
-('totruong', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Nguyen Van To Truong', '0912345678', 'totruong@bluesky.vn', 'ACTIVE'),
+('totruong', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Nguyen Van To Truong', '0912345678', 'totruong@bluemoon.vn', 'ACTIVE'),
 -- Ke toan (password: ketoan123)
-('ketoan', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Tran Thi Ke Toan', '0923456789', 'ketoan@bluesky.vn', 'ACTIVE');
+('ketoan', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Tran Thi Ke Toan', '0923456789', 'ketoan@bluemoon.vn', 'ACTIVE');
 
 -- Assign roles to users
 INSERT INTO user_roles(user_id, role_id)
@@ -268,5 +268,5 @@ INSERT INTO fee_obligations(household_id, fee_item_id, fee_period_id, fee_item_n
 INSERT INTO notifications(title, content, type, status, created_by) VALUES
 ('Thông báo thu phí tháng 12/2025', 'Kính gửi Quý cư dân,\n\nBan quản lý xin thông báo đợt thu phí dịch vụ tháng 12/2025 đã bắt đầu. Hạn nộp phí: 15/12/2025.\n\nXin cảm ơn!', 'GENERAL', 'PUBLISHED', 1),
 ('Lịch bảo trì thang máy', 'Ban quản lý xin thông báo lịch bảo trì định kỳ thang máy:\n- Block A: 20/12/2025 (8h-12h)\n- Block B: 21/12/2025 (8h-12h)\n- Block C: 22/12/2025 (8h-12h)\n\nTrong thời gian này, cư dân vui lòng sử dụng thang bộ.', 'MAINTENANCE', 'PUBLISHED', 1),
-('Chúc mừng năm mới 2026', 'Ban quản lý Chung cư BlueSky kính chúc Quý cư dân một năm mới An Khang Thịnh Vượng!\n\nChương trình đón năm mới sẽ được tổ chức tại sảnh tầng 1 Block A vào tối 31/12/2025.', 'GENERAL', 'DRAFT', 1),
+('Chúc mừng năm mới 2026', 'Ban quản lý Chung cư BlueMoon kính chúc Quý cư dân một năm mới An Khang Thịnh Vượng!\n\nChương trình đón năm mới sẽ được tổ chức tại sảnh tầng 1 Block A vào tối 31/12/2025.', 'GENERAL', 'DRAFT', 1),
 ('Nhắc nhở nộp phí', 'Một số hộ dân chưa hoàn thành nghĩa vụ phí tháng 11/2025. Vui lòng thanh toán sớm để tránh phát sinh phí phạt.', 'PAYMENT', 'PUBLISHED', 1);

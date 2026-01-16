@@ -22,6 +22,9 @@ public interface ResidentRepository extends JpaRepository<Resident, Long> {
     
     boolean existsByIdNumber(String idNumber);
     
+    // Kiểm tra id_number đã tồn tại cho resident khác (ngoại trừ resident hiện tại)
+    boolean existsByIdNumberAndIdNot(String idNumber, Long id);
+    
     // Đếm số nhân khẩu theo trạng thái
     long countByStatus(String status);
 }

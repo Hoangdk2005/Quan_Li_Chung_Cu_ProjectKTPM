@@ -98,7 +98,7 @@ const Login: React.FC = () => {
           }}>
             <HomeOutlined style={{ fontSize: 28, color: '#fff' }} />
           </div>
-          <Title level={3} style={{ margin: 0 }}>BlueSky Apartment</Title>
+          <Title level={3} style={{ margin: 0 }}>BlueMoon Apartment</Title>
           <Text type="secondary">Hệ thống quản lý chung cư</Text>
         </div>
 

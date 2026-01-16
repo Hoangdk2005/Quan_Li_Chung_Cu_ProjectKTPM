@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Tabs, Card, Table, Button, message, Modal, Form, Popconfirm, Space, Tag } from "antd";
 import { useParams } from "react-router-dom";
 import { api } from "../services/api";
@@ -8,6 +8,18 @@ import ResidentForm from "../components/Household/ResidentForm";
 import VehicleForm from "../components/Household/VehicleForm";
 import FeePaymentForm from "../components/Household/FeePaymentForm";
 import dayjs from 'dayjs';
+
+// Helper function để hiển thị trạng thái cư dân với màu sắc
+const getResidentStatusTag = (status: string) => {
+  const statusConfig: Record<string, { color: string; label: string }> = {
+    ACTIVE: { color: 'green', label: 'Đang ở' },
+    TAM_VANG: { color: 'orange', label: 'Tạm vắng' },
+    MOVED_OUT: { color: 'red', label: 'Đã chuyển đi' },
+    DECEASED: { color: 'gray', label: 'Đã mất' },
+  };
+  const config = statusConfig[status] || { color: 'default', label: status };
+  return <Tag color={config.color}>{config.label}</Tag>;
+};
 
 interface Household {
   id: string;
@@ -55,6 +67,16 @@ const HouseholdDetail: React.FC = () => {
   const [residents, setResidents] = useState<Resident[]>([]);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [obligations, setObligations] = useState<Obligation[]>([]);
+
+  // Phân tách nhân khẩu: đang ở và đã chuyển đi
+  const activeResidents = useMemo(() => 
+    residents.filter(r => r.status === 'ACTIVE' || r.status === 'TAM_VANG'), 
+    [residents]
+  );
+  const movedOutResidents = useMemo(() => 
+    residents.filter(r => r.status === 'MOVED_OUT' || r.status === 'DECEASED'), 
+    [residents]
+  );
 
   // State cho modal nhân khẩu
   const [isResidentModalOpen, setIsResidentModalOpen] = useState(false);
@@ -249,7 +271,7 @@ const HouseholdDetail: React.FC = () => {
           </div>
           <Table
             rowKey="id"
-            dataSource={residents}
+            dataSource={activeResidents}
             columns={[
               { 
                 title: "Họ tên", 
@@ -261,10 +283,18 @@ const HouseholdDetail: React.FC = () => {
                 )
               },
               { title: "Ngày sinh", dataIndex: "dob" },
-              { title: "Giới tính", dataIndex: "gender" },
+              { 
+                title: "Giới tính", 
+                dataIndex: "gender",
+                render: (gender: string) => gender === 'MALE' ? 'Nam' : gender === 'FEMALE' ? 'Nữ' : 'Khác'
+              },
               { title: "Số CMND/CCCD", dataIndex: "idNumber" },
               { title: "Quan hệ với chủ hộ", dataIndex: "relationshipToHead" },
-              { title: "Trạng thái", dataIndex: "status" },
+              { 
+                title: "Trạng thái", 
+                dataIndex: "status",
+                render: (status: string) => getResidentStatusTag(status)
+              },
               {
                 title: "Hành động",
                 render: (_, record: Resident) => (
@@ -307,6 +337,58 @@ const HouseholdDetail: React.FC = () => {
               isCurrentHead={editingResident?.isHead === true}
             />
           </Modal>
+        </Tabs.TabPane>
+
+        <Tabs.TabPane tab={`Lịch sử chuyển đi (${movedOutResidents.length})`} key="moved-out-history">
+          <Table
+            rowKey="id"
+            dataSource={movedOutResidents}
+            columns={[
+              { 
+                title: "Họ tên", 
+                dataIndex: "fullName",
+                render: (text: string, record: Resident) => (
+                  <>
+                    {text} {record.isHead && <Tag color="gold">Chủ hộ cũ</Tag>}
+                  </>
+                )
+              },
+              { title: "Ngày sinh", dataIndex: "dob" },
+              { 
+                title: "Giới tính", 
+                dataIndex: "gender",
+                render: (gender: string) => gender === 'MALE' ? 'Nam' : gender === 'FEMALE' ? 'Nữ' : 'Khác'
+              },
+              { title: "Số CMND/CCCD", dataIndex: "idNumber" },
+              { title: "Quan hệ với chủ hộ", dataIndex: "relationshipToHead" },
+              { 
+                title: "Trạng thái", 
+                dataIndex: "status",
+                render: (status: string) => getResidentStatusTag(status)
+              },
+              {
+                title: "Hành động",
+                render: (_, record: Resident) => (
+                  <Space>
+                    <Button onClick={() => handleEditResident(record)}>
+                      Xem/Sửa
+                    </Button>
+                    <Popconfirm
+                      title="Xác nhận xóa vĩnh viễn nhân khẩu này?"
+                      onConfirm={() => handleDeleteResident(record)}
+                      okText="Xóa"
+                      cancelText="Hủy"
+                    >
+                      <Button danger>
+                        Xóa
+                      </Button>
+                    </Popconfirm>
+                  </Space>
+                ),
+              },
+            ]}
+            locale={{ emptyText: 'Chưa có nhân khẩu nào chuyển đi' }}
+          />
         </Tabs.TabPane>
 
         <Tabs.TabPane tab="Phương tiện" key="vehicles">

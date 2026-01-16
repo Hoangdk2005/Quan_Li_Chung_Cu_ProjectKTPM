@@ -11,6 +11,7 @@ interface Apartment {
   block: string;
   floor: string;
   unit: string;
+  status: string;
 }
 
 const HouseholdForm: React.FC<HouseholdFormProps> = ({ form }) => {
@@ -19,7 +20,8 @@ const HouseholdForm: React.FC<HouseholdFormProps> = ({ form }) => {
   useEffect(() => {
     const fetchApartments = async () => {
       try {
-        const res = await api.get("/apartments", { params: { status: "ACTIVE" } });
+        const res = await api.get("/apartments");
+        // Lấy tất cả căn hộ để có thể chọn (bao gồm cả căn hộ đang ở nếu đang edit)
         setApartments(res.data.content || res.data);
       } catch (err: any) {
         message.error(err.response?.data?.message || "Lỗi tải danh sách căn hộ");
@@ -40,13 +42,21 @@ const HouseholdForm: React.FC<HouseholdFormProps> = ({ form }) => {
 
       <Form.Item
         label="Căn hộ"
-        name="apartmentId"
-        rules={[{ required: true, message: "Vui lòng chọn căn hộ" }]}
+        name="apartmentIds"
+        rules={[{ required: true, message: "Vui lòng chọn ít nhất một căn hộ" }]}
       >
-        <Select placeholder="Chọn căn hộ">
+        <Select 
+          mode="multiple"
+          placeholder="Chọn một hoặc nhiều căn hộ"
+          optionFilterProp="children"
+          showSearch
+          filterOption={(input, option) =>
+            (option?.children as unknown as string)?.toLowerCase().includes(input.toLowerCase())
+          }
+        >
           {apartments.map((apt) => (
-            <Select.Option key={apt.id} value={apt.id}>
-              {`${apt.block}-${apt.floor}-${apt.unit}`}
+            <Select.Option key={apt.id} value={Number(apt.id)}>
+              {`${apt.block}-${apt.floor}-${apt.unit}${apt.status === 'OCCUPIED' ? ' (Đã có người ở)' : ''}`}
             </Select.Option>
           ))}
         </Select>

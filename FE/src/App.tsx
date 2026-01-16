@@ -17,6 +17,7 @@ import Households from './app/pages/Households';
 import HouseholdDetail from './app/pages/HouseholdDetail';
 import Persons from './app/pages/Persons';
 import Residents from './app/pages/Resident'; // File tên là Resident.tsx nhưng component thường gọi là Residents
+import MoveOutHistory from './app/pages/MoveOutHistory';
 import Vehicles from './app/pages/Vehicles';
 import Apartments from './app/pages/Apartments';
 
@@ -57,6 +58,7 @@ export default function App() {
               <Route path="residents" element={<Residents />} />
               <Route path="persons/:householdId" element={<Persons />} />
               <Route path="vehicles" element={<Vehicles />} />
+              <Route path="move-out-history" element={<MoveOutHistory />} />
 
               {/* --- NHÓM QUẢN LÝ PHÍ & DỊCH VỤ --- */}
               <Route path="fee-items" element={<FeeItems />} />

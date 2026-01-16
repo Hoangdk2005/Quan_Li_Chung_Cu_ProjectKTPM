@@ -41,6 +41,9 @@ public class Notification {
     @Column(name = "published_at")
     private LocalDateTime publishedAt;
 
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
     private User createdBy;

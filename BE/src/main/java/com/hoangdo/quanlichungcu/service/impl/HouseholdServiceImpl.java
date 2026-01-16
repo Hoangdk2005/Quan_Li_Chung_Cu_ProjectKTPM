@@ -13,7 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -66,22 +68,36 @@ public class HouseholdServiceImpl implements HouseholdService {
 
     @Override
     public HouseholdDTO create(HouseholdDTO dto) {
-        Apartment apartment = apartmentRepository.findById(dto.getApartmentId())
-                .orElseThrow(() -> new ResourceNotFoundException("Apartment", "id", dto.getApartmentId()));
+        // Lấy danh sách apartmentIds - hỗ trợ cả apartmentId đơn và apartmentIds
+        List<Long> apartmentIds = dto.getApartmentIds();
+        if (apartmentIds == null || apartmentIds.isEmpty()) {
+            if (dto.getApartmentId() != null) {
+                apartmentIds = List.of(dto.getApartmentId());
+            } else {
+                throw new IllegalArgumentException("Phải chọn ít nhất một căn hộ");
+            }
+        }
+        
+        // Lấy danh sách căn hộ
+        Set<Apartment> apartments = new HashSet<>();
+        for (Long apartmentId : apartmentIds) {
+            Apartment apartment = apartmentRepository.findById(apartmentId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Apartment", "id", apartmentId));
+            apartments.add(apartment);
+            // Cập nhật trạng thái căn hộ
+            apartment.setStatus("OCCUPIED");
+            apartmentRepository.save(apartment);
+        }
         
         Household household = Household.builder()
                 .householdId(dto.getHouseholdId())
-                .apartment(apartment)
+                .apartments(apartments)
                 .ownerName(dto.getOwnerName())
                 .phone(dto.getPhone())
                 .address(dto.getAddress())
                 .moveInDate(dto.getMoveInDate())
                 .status(dto.getStatus() != null ? dto.getStatus() : "ACTIVE")
                 .build();
-        
-        // Update apartment status
-        apartment.setStatus("OCCUPIED");
-        apartmentRepository.save(apartment);
         
         household = householdRepository.save(household);
         return toDTO(household);
@@ -92,21 +108,45 @@ public class HouseholdServiceImpl implements HouseholdService {
         Household household = householdRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Household", "id", id));
         
-        if (!household.getApartment().getId().equals(dto.getApartmentId())) {
-            Apartment newApartment = apartmentRepository.findById(dto.getApartmentId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Apartment", "id", dto.getApartmentId()));
-            
-            // Update old apartment status
-            household.getApartment().setStatus("EMPTY");
-            apartmentRepository.save(household.getApartment());
-            
-            // Update new apartment
-            newApartment.setStatus("OCCUPIED");
-            apartmentRepository.save(newApartment);
-            
-            household.setApartment(newApartment);
+        // Lấy danh sách apartmentIds mới
+        List<Long> newApartmentIds = dto.getApartmentIds();
+        if (newApartmentIds == null || newApartmentIds.isEmpty()) {
+            if (dto.getApartmentId() != null) {
+                newApartmentIds = List.of(dto.getApartmentId());
+            } else {
+                throw new IllegalArgumentException("Phải chọn ít nhất một căn hộ");
+            }
         }
         
+        // Lấy danh sách căn hộ cũ
+        Set<Long> oldApartmentIds = household.getApartments().stream()
+                .map(Apartment::getId)
+                .collect(Collectors.toSet());
+        
+        Set<Long> newIds = new HashSet<>(newApartmentIds);
+        
+        // Cập nhật trạng thái các căn hộ bị loại bỏ
+        for (Apartment oldApartment : household.getApartments()) {
+            if (!newIds.contains(oldApartment.getId())) {
+                oldApartment.setStatus("EMPTY");
+                apartmentRepository.save(oldApartment);
+            }
+        }
+        
+        // Thêm các căn hộ mới
+        Set<Apartment> apartments = new HashSet<>();
+        for (Long apartmentId : newApartmentIds) {
+            Apartment apartment = apartmentRepository.findById(apartmentId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Apartment", "id", apartmentId));
+            apartments.add(apartment);
+            // Cập nhật trạng thái căn hộ mới
+            if (!oldApartmentIds.contains(apartmentId)) {
+                apartment.setStatus("OCCUPIED");
+                apartmentRepository.save(apartment);
+            }
+        }
+        
+        household.setApartments(apartments);
         household.setHouseholdId(dto.getHouseholdId());
         household.setOwnerName(dto.getOwnerName());
         household.setPhone(dto.getPhone());
@@ -123,20 +163,36 @@ public class HouseholdServiceImpl implements HouseholdService {
         Household household = householdRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Household", "id", id));
         
-        // Update apartment status
-        household.getApartment().setStatus("EMPTY");
-        apartmentRepository.save(household.getApartment());
+        // Cập nhật trạng thái tất cả các căn hộ về EMPTY
+        for (Apartment apartment : household.getApartments()) {
+            apartment.setStatus("EMPTY");
+            apartmentRepository.save(apartment);
+        }
         
         householdRepository.deleteById(id);
     }
 
     private HouseholdDTO toDTO(Household household) {
-        Apartment apt = household.getApartment();
+        Set<Apartment> apts = household.getApartments();
+        
+        // Tạo thông tin căn hộ và danh sách ID
+        String apartmentInfo = apts.stream()
+                .map(apt -> apt.getBlock() + "-" + apt.getFloor() + "-" + apt.getUnit())
+                .collect(Collectors.joining(", "));
+        
+        List<Long> apartmentIds = apts.stream()
+                .map(Apartment::getId)
+                .collect(Collectors.toList());
+        
+        // Lấy ID căn hộ đầu tiên cho tương thích ngược
+        Long firstApartmentId = apartmentIds.isEmpty() ? null : apartmentIds.get(0);
+        
         return HouseholdDTO.builder()
                 .id(household.getId())
                 .householdId(household.getHouseholdId())
-                .apartmentId(apt.getId())
-                .apartmentInfo(apt.getBlock() + "-" + apt.getFloor() + "-" + apt.getUnit())
+                .apartmentId(firstApartmentId)
+                .apartmentIds(apartmentIds)
+                .apartmentInfo(apartmentInfo)
                 .ownerName(household.getOwnerName())
                 .phone(household.getPhone())
                 .address(household.getAddress())

@@ -155,5 +155,5 @@ INSERT INTO fee_obligations(household_id, fee_item_id, fee_period_id, fee_item_n
 INSERT INTO notifications(title, content, type, status, created_by) VALUES
 ('Thong bao thu phi thang 12/2025', 'Kinh gui Quy cu dan, Ban quan ly xin thong bao dot thu phi dich vu thang 12/2025 da bat dau. Han nop phi: 15/12/2025. Xin cam on!', 'GENERAL', 'PUBLISHED', 1),
 ('Lich bao tri thang may', 'Ban quan ly xin thong bao lich bao tri dinh ky thang may: Block A: 20/12/2025 (8h-12h), Block B: 21/12/2025 (8h-12h), Block C: 22/12/2025 (8h-12h). Trong thoi gian nay, cu dan vui long su dung thang bo.', 'MAINTENANCE', 'PUBLISHED', 1),
-('Chuc mung nam moi 2026', 'Ban quan ly Chung cu BlueSky kinh chuc Quy cu dan mot nam moi An Khang Thinh Vuong! Chuong trinh don nam moi se duoc to chuc tai sanh tang 1 Block A vao toi 31/12/2025.', 'GENERAL', 'DRAFT', 1),
+('Chuc mung nam moi 2026', 'Ban quan ly Chung cu BlueMoon kinh chuc Quy cu dan mot nam moi An Khang Thinh Vuong! Chuong trinh don nam moi se duoc to chuc tai sanh tang 1 Block A vao toi 31/12/2025.', 'GENERAL', 'DRAFT', 1),
 ('Nhac nho nop phi', 'Mot so ho dan chua hoan thanh nghia vu phi thang 11/2025. Vui long thanh toan som de tranh phat sinh phi phat.', 'PAYMENT', 'PUBLISHED', 1);

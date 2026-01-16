@@ -8,7 +8,9 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "households")
@@ -26,9 +28,14 @@ public class Household {
     @Column(name = "household_id", nullable = false, unique = true, length = 20)
     private String householdId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "apartment_id", nullable = false)
-    private Apartment apartment;
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "household_apartments",
+        joinColumns = @JoinColumn(name = "household_id"),
+        inverseJoinColumns = @JoinColumn(name = "apartment_id")
+    )
+    @Builder.Default
+    private Set<Apartment> apartments = new HashSet<>();
 
     @Column(name = "owner_name", nullable = false, length = 120)
     private String ownerName;

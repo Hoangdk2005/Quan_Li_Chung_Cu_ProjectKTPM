@@ -52,6 +52,7 @@ public class NotificationServiceImpl implements NotificationService {
                 .type(dto.getType() != null ? dto.getType() : "INFO")
                 .status("DRAFT")
                 .targetType(dto.getTargetType() != null ? dto.getTargetType() : "ALL")
+                .imageUrl(dto.getImageUrl())
                 .build();
         
         notification = notificationRepository.save(notification);
@@ -67,6 +68,7 @@ public class NotificationServiceImpl implements NotificationService {
         notification.setContent(dto.getContent());
         notification.setType(dto.getType());
         notification.setTargetType(dto.getTargetType());
+        notification.setImageUrl(dto.getImageUrl());
         
         notification = notificationRepository.save(notification);
         return toDTO(notification);
@@ -102,6 +104,7 @@ public class NotificationServiceImpl implements NotificationService {
                 .targetType(notification.getTargetType())
                 .createdDate(notification.getCreatedDate())
                 .publishedAt(notification.getPublishedAt())
+                .imageUrl(notification.getImageUrl())
                 .createdById(notification.getCreatedBy() != null ? notification.getCreatedBy().getId() : null)
                 .createdByName(notification.getCreatedBy() != null ? notification.getCreatedBy().getFullName() : null)
                 .build();

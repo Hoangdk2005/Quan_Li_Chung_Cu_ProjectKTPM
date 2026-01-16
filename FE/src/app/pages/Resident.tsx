@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Table, Card, Tag, message, Button, Input, Select, Row, Col, Modal, Form, DatePicker, Space, Popconfirm, Checkbox } from 'antd';
+import React, { useEffect, useState, useMemo } from 'react';
+import { Table, Card, Tag, message, Button, Input, Select, Row, Col, Modal, Form, DatePicker, Space, Popconfirm, Checkbox, Tabs } from 'antd';
 import { SearchOutlined, ReloadOutlined, PlusOutlined, EditOutlined, DeleteOutlined, UserOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { api } from '../services/api';
@@ -89,6 +89,16 @@ const Residents: React.FC = () => {
     setFilteredData(result);
   }, [searchText, filterHousehold, filterStatus, filterGender, data]);
 
+  // Phân tách cư dân đang ở và lịch sử chuyển đi
+  const activeResidents = useMemo(() => 
+    filteredData.filter(r => r.status === 'ACTIVE' || r.status === 'TAM_VANG'),
+    [filteredData]
+  );
+  const movedOutResidents = useMemo(() => 
+    filteredData.filter(r => r.status === 'MOVED_OUT' || r.status === 'DECEASED'),
+    [filteredData]
+  );
+
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
@@ -166,6 +176,7 @@ const Residents: React.FC = () => {
           'ACTIVE': { color: 'green', label: 'Đang ở' },
           'TAM_VANG': { color: 'orange', label: 'Tạm vắng' },
           'MOVED_OUT': { color: 'red', label: 'Đã chuyển đi' },
+          'DECEASED': { color: 'gray', label: 'Đã mất' },
         };
         const s = statusMap[status] || { color: 'default', label: status };
         return <Tag color={s.color}>{s.label}</Tag>;
@@ -254,6 +265,8 @@ const Residents: React.FC = () => {
             options={[
               { value: "ACTIVE", label: "Đang ở" },
               { value: "TAM_VANG", label: "Tạm vắng" },
+              { value: "MOVED_OUT", label: "Đã chuyển đi" },
+              { value: "DECEASED", label: "Đã mất" },
             ]}
           />
         </Col>
@@ -262,13 +275,35 @@ const Residents: React.FC = () => {
         </Col>
       </Row>
 
-      <Table 
-        columns={columns} 
-        dataSource={filteredData} 
-        rowKey="id" 
-        loading={loading}
-        pagination={{ pageSize: 10, showTotal: (total) => `Tổng ${total} cư dân` }}
-      />
+      <Tabs defaultActiveKey="active" items={[
+        {
+          key: 'active',
+          label: `Đang ở (${activeResidents.length})`,
+          children: (
+            <Table 
+              columns={columns} 
+              dataSource={activeResidents} 
+              rowKey="id" 
+              loading={loading}
+              pagination={{ pageSize: 10, showTotal: (total) => `Tổng ${total} cư dân` }}
+            />
+          )
+        },
+        {
+          key: 'history',
+          label: `Lịch sử chuyển đi (${movedOutResidents.length})`,
+          children: (
+            <Table 
+              columns={columns} 
+              dataSource={movedOutResidents} 
+              rowKey="id" 
+              loading={loading}
+              pagination={{ pageSize: 10, showTotal: (total) => `Tổng ${total} cư dân` }}
+              locale={{ emptyText: 'Chưa có cư dân nào chuyển đi hoặc đã mất' }}
+            />
+          )
+        }
+      ]} />
 
       <Modal
         title={editingItem ? "Chỉnh sửa cư dân" : "Thêm cư dân mới"}
@@ -343,6 +378,7 @@ const Residents: React.FC = () => {
                   { value: 'ACTIVE', label: 'Đang ở' },
                   { value: 'TAM_VANG', label: 'Tạm vắng' },
                   { value: 'MOVED_OUT', label: 'Đã chuyển đi' },
+                  { value: 'DECEASED', label: 'Đã mất' },
                 ]} />
               </Form.Item>
             </Col>

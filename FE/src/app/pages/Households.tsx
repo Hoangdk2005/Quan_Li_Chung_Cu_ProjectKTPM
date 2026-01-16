@@ -15,6 +15,8 @@ interface Household {
   moveInDate?: string;
   status?: string;
   apartmentId?: string;
+  apartmentIds?: number[];
+  apartmentInfo?: string;
 }
 
 const Households: React.FC = () => {
@@ -100,6 +102,7 @@ const Households: React.FC = () => {
     setIsModalOpen(true);
     form.setFieldsValue({
       ...household,
+      apartmentIds: household.apartmentIds || (household.apartmentId ? [Number(household.apartmentId)] : []),
       moveInDate: household.moveInDate ? dayjs(household.moveInDate) : null,
     });
   };
@@ -131,7 +134,11 @@ const Households: React.FC = () => {
       dataIndex: 'ownerName',
       sorter: (a: Household, b: Household) => a.ownerName.localeCompare(b.ownerName)
     },
-    { title: 'Địa chỉ', dataIndex: 'address' },
+    { 
+      title: 'Căn hộ', 
+      dataIndex: 'apartmentInfo',
+      render: (info: string) => info || '-'
+    },
     { title: 'Số điện thoại', dataIndex: 'phone' },
     { title: 'Ngày chuyển đến', dataIndex: 'moveInDate' },
     { 

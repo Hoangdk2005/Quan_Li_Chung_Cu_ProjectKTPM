@@ -15,9 +15,10 @@ public interface HouseholdRepository extends JpaRepository<Household, Long> {
     
     List<Household> findByStatus(String status);
     
+    @Query("SELECT h FROM Household h JOIN h.apartments a WHERE a.id = :apartmentId")
     List<Household> findByApartmentId(Long apartmentId);
     
-    @Query("SELECT h FROM Household h LEFT JOIN FETCH h.residents LEFT JOIN FETCH h.vehicles WHERE h.id = :id")
+    @Query("SELECT h FROM Household h LEFT JOIN FETCH h.apartments LEFT JOIN FETCH h.residents LEFT JOIN FETCH h.vehicles WHERE h.id = :id")
     Optional<Household> findByIdWithDetails(Long id);
     
     boolean existsByHouseholdId(String householdId);

@@ -161,7 +161,7 @@ const ResidentLayout: React.FC = () => {
           </div>
           {!collapsed && (
             <span style={{ color: '#fff', fontSize: 16, fontWeight: 'bold', whiteSpace: 'nowrap' }}>
-              Cư dân BlueSky
+              Cư dân BlueMoon
             </span>
           )}
         </div>
@@ -238,7 +238,7 @@ const ResidentLayout: React.FC = () => {
         </Content>
 
         <Footer style={{ textAlign: 'center', color: '#888' }}>
-          BlueSky Apartment ©{new Date().getFullYear()} - Cổng thông tin cư dân
+          BlueMoon Apartment ©{new Date().getFullYear()} - Cổng thông tin cư dân
         </Footer>
       </Layout>
     </Layout>

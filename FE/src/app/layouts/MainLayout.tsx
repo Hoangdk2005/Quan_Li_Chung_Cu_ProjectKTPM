@@ -17,6 +17,7 @@ import {
   BellOutlined,
   AppstoreOutlined,
   BuildOutlined,
+  HistoryOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 
@@ -55,6 +56,7 @@ const items: MenuItem[] = [
     getItem('Danh sách Hộ dân', '/households', <HomeOutlined />),
     getItem('Thông tin Cư dân', '/residents', <UserOutlined />), // Cần tạo route này sau
     getItem('Quản lý Phương tiện', '/vehicles', <CarOutlined />), // Cần tạo route này sau
+    getItem('Lịch sử chuyển đi', '/move-out-history', <UserOutlined />),
   ]),
 
   getItem('Quản lý Phí & Dịch vụ', 'sub2', <BankOutlined />, [
@@ -76,6 +78,7 @@ const breadcrumbNameMap: Record<string, string> = {
   '/households': 'Danh sách Hộ dân',
   '/residents': 'Thông tin Cư dân',
   '/vehicles': 'Quản lý Phương tiện',
+  '/move-out-history': 'Lịch sử chuyển đi',
   '/fee-items': 'Danh mục Phí',
   '/fee-periods': 'Đợt thu phí',
   '/fee-obligations': 'Danh sách Công nợ',
@@ -137,28 +140,35 @@ const MainLayout: React.FC = () => {
       getItem('Dashboard', '/dashboard', <PieChartOutlined />),
     ];
 
-    // Quản lý dân cư - hiển thị cho tất cả (ADMIN, TO_TRUONG, hoặc mặc định)
-    menus.push(
-      getItem('Quản lý Cư dân', 'sub1', <TeamOutlined />, [
-        getItem('Danh sách Căn hộ', '/apartments', <BuildOutlined />),
-        getItem('Danh sách Hộ dân', '/households', <HomeOutlined />),
-        getItem('Thông tin Cư dân', '/residents', <UserOutlined />),
-        getItem('Quản lý Phương tiện', '/vehicles', <CarOutlined />),
-      ])
-    );
+    // Quản lý dân cư - hiển thị cho ADMIN và TO_TRUONG
+    if (role === ROLES.ADMIN || role === ROLES.TO_TRUONG) {
+      menus.push(
+        getItem('Quản lý Cư dân', 'sub1', <TeamOutlined />, [
+          getItem('Danh sách Căn hộ', '/apartments', <BuildOutlined />),
+          getItem('Danh sách Hộ dân', '/households', <HomeOutlined />),
+          getItem('Thông tin Cư dân', '/residents', <UserOutlined />),
+          getItem('Quản lý Phương tiện', '/vehicles', <CarOutlined />),
+          getItem('Lịch sử chuyển đi', '/move-out-history', <HistoryOutlined />),
+        ])
+      );
+    }
 
-    // Quản lý thu phí - hiển thị cho tất cả (ADMIN, KE_TOAN, hoặc mặc định)
-    menus.push(
-      getItem('Quản lý Phí & Dịch vụ', 'sub2', <BankOutlined />, [
-        getItem('Danh mục Phí', '/fee-items', <AppstoreOutlined />),
-        getItem('Đợt thu phí', '/fee-periods', <FileTextOutlined />),
-        getItem('Danh sách Công nợ', '/fee-obligations', <BankOutlined />),
-      ]),
-      getItem('Thông báo', '/notifications', <BellOutlined />)
-    );
+    // Quản lý thu phí - hiển thị cho ADMIN và KE_TOAN
+    if (role === ROLES.ADMIN || role === ROLES.KE_TOAN) {
+      menus.push(
+        getItem('Quản lý Phí & Dịch vụ', 'sub2', <BankOutlined />, [
+          getItem('Danh mục Phí', '/fee-items', <AppstoreOutlined />),
+          getItem('Đợt thu phí', '/fee-periods', <FileTextOutlined />),
+          getItem('Danh sách Công nợ', '/fee-obligations', <BankOutlined />),
+        ])
+      );
+    }
 
-    // Hệ thống - hiển thị cho ADMIN
-    if (role === ROLES.ADMIN || !role) {
+    // Thông báo - hiển thị cho tất cả
+    menus.push(getItem('Thông báo', '/notifications', <BellOutlined />));
+
+    // Hệ thống - chỉ hiển thị cho ADMIN
+    if (role === ROLES.ADMIN) {
       menus.push(
         getItem('Hệ thống', 'sub3', <SettingOutlined />, [
           getItem('Tài khoản Admin', '/users', <UserOutlined />),

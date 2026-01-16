@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Tag, Space, Modal, Form, Input, Select, message, Card, Row, Col, Popconfirm } from 'antd';
-import { PlusOutlined, SendOutlined, SearchOutlined, ReloadOutlined, EditOutlined, DeleteOutlined, BellOutlined } from '@ant-design/icons';
+import { Table, Button, Tag, Space, Modal, Form, Input, Select, message, Card, Row, Col, Popconfirm, Upload, Image } from 'antd';
+import { PlusOutlined, SendOutlined, SearchOutlined, ReloadOutlined, EditOutlined, DeleteOutlined, BellOutlined, UploadOutlined, PictureOutlined } from '@ant-design/icons';
+import type { UploadFile, UploadProps } from 'antd';
 import { api } from '../services/api';
 
 interface NotificationItem {
@@ -11,6 +12,7 @@ interface NotificationItem {
   status: string;
   createdDate: string;
   targetType: string;
+  imageUrl?: string;
 }
 
 const Notifications: React.FC = () => {
@@ -20,6 +22,7 @@ const Notifications: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<NotificationItem | null>(null);
   const [form] = Form.useForm();
+  const [previewImage, setPreviewImage] = useState<string>('');
 
   // Filters
   const [searchText, setSearchText] = useState("");
@@ -87,6 +90,7 @@ const Notifications: React.FC = () => {
   const handleEdit = (record: NotificationItem) => {
     setEditingItem(record);
     form.setFieldsValue(record);
+    setPreviewImage(record.imageUrl || '');
     setIsModalOpen(true);
   };
 
@@ -118,6 +122,26 @@ const Notifications: React.FC = () => {
   };
 
   const columns = [
+    {
+      title: 'Ảnh',
+      dataIndex: 'imageUrl',
+      key: 'imageUrl',
+      width: 80,
+      render: (url: string) => url ? (
+        <Image 
+          src={url} 
+          alt="thumbnail" 
+          width={60} 
+          height={45} 
+          style={{ objectFit: 'cover', borderRadius: 4 }}
+          fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioKOA7DkgdjqEvQHEToKwj4DVhAQ5A9k3gGyB5IxEoBmML4BsnSQk8XQkNtReEOBxcfXxUQg1Mjc0dyHgXNJBSWpFCYh2zi+oLMpMzyhRcASGUqqCZ16yno6CkYGRAQMDKMwhqj/fAIcloxgHQqxAjIHBEugw5sUIsSQpBobtQPdLciLEVJYzMPBHMDBsayhILEqEO4DxG0txmrERhM29nYGBddr//5/DGRjYNRkY/l7////39v///y4Dmn+LgesA"
+        />
+      ) : (
+        <div style={{ width: 60, height: 45, background: '#f5f5f5', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <PictureOutlined style={{ color: '#bfbfbf' }} />
+        </div>
+      ),
+    },
     { 
       title: 'Tiêu đề', 
       dataIndex: 'title', 
@@ -254,33 +278,58 @@ const Notifications: React.FC = () => {
         title={editingItem ? "Chỉnh sửa thông báo" : "Tạo thông báo mới"} 
         open={isModalOpen} 
         onOk={handleSubmit} 
-        onCancel={() => { setIsModalOpen(false); setEditingItem(null); form.resetFields(); }}
+        onCancel={() => { setIsModalOpen(false); setEditingItem(null); form.resetFields(); setPreviewImage(''); }}
         okText={editingItem ? "Cập nhật" : "Tạo mới"}
         cancelText="Hủy"
-        width={600}
+        width={700}
       >
         <Form form={form} layout="vertical" initialValues={{ type: 'INFO', targetType: 'ALL' }}>
           <Form.Item name="title" label="Tiêu đề" rules={[{ required: true, message: 'Vui lòng nhập tiêu đề' }]}>
             <Input placeholder="Ví dụ: Thông báo đóng tiền điện..." />
           </Form.Item>
           
-          <Form.Item name="type" label="Loại tin">
-            <Select options={[
-                { value: 'INFO', label: 'Thông tin' },
-                { value: 'GENERAL', label: 'Thông báo chung' },
-                { value: 'FEE', label: 'Thông báo phí' },
-                { value: 'PAYMENT', label: 'Thanh toán' },
-                { value: 'ALERT', label: 'Cảnh báo / Khẩn cấp' },
-                { value: 'MAINTENANCE', label: 'Bảo trì' },
-            ]} />
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item name="type" label="Loại tin">
+                <Select options={[
+                    { value: 'INFO', label: 'Thông tin' },
+                    { value: 'GENERAL', label: 'Thông báo chung' },
+                    { value: 'FEE', label: 'Thông báo phí' },
+                    { value: 'PAYMENT', label: 'Thanh toán' },
+                    { value: 'ALERT', label: 'Cảnh báo / Khẩn cấp' },
+                    { value: 'MAINTENANCE', label: 'Bảo trì' },
+                ]} />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="targetType" label="Gửi tới">
+                <Select options={[
+                    { value: 'ALL', label: 'Toàn bộ cư dân' },
+                    { value: 'SPECIFIC', label: 'Hộ cụ thể (Tính năng đang phát triển)' }
+                ]} />
+              </Form.Item>
+            </Col>
+          </Row>
+          
+          <Form.Item name="imageUrl" label="Ảnh minh họa">
+            <Input 
+              placeholder="Nhập URL ảnh (ví dụ: https://example.com/image.jpg)" 
+              prefix={<PictureOutlined />}
+              onChange={(e) => setPreviewImage(e.target.value)}
+            />
           </Form.Item>
           
-          <Form.Item name="targetType" label="Gửi tới">
-             <Select options={[
-                { value: 'ALL', label: 'Toàn bộ cư dân' },
-                { value: 'SPECIFIC', label: 'Hộ cụ thể (Tính năng đang phát triển)' }
-             ]} />
-          </Form.Item>
+          {previewImage && (
+            <div style={{ marginBottom: 16 }}>
+              <p style={{ marginBottom: 8, color: '#666' }}>Xem trước ảnh:</p>
+              <Image 
+                src={previewImage} 
+                alt="Preview" 
+                style={{ maxWidth: '100%', maxHeight: 200, objectFit: 'cover', borderRadius: 8 }}
+                fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioKOA7DkgdjqEvQHEToKwj4DVhAQ5A9k3gGyB5IxEoBmML4BsnSQk8XQkNtReEOBxcfXxUQg1Mjc0dyHgXNJBSWpFCYh2zi+oLMpMzyhRcASGUqqCZ16yno6CkYGRAQMDKMwhqj/fAIcloxgHQqxAjIHBEugw5sUIsSQpBobtQPdLciLEVJYzMPBHMDBsayhILEqEO4DxG0txmrERhM29nYGBddr//5/DGRjYNRkY/l7////39v///y4Dmn+LgesA"
+              />
+            </div>
+          )}
           
           <Form.Item name="content" label="Nội dung" rules={[{ required: true, message: 'Vui lòng nhập nội dung' }]}>
             <Input.TextArea rows={6} placeholder="Nhập nội dung chi tiết..." />

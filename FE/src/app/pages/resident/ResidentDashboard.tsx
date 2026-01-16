@@ -1,6 +1,6 @@
 // src/app/pages/resident/ResidentDashboard.tsx
 import React, { useEffect, useState } from 'react';
-import { Card, Row, Col, Statistic, List, Tag, Typography, Progress, Divider, Timeline, Spin, Space, Avatar, Table } from 'antd';
+import { Card, Row, Col, Statistic, List, Tag, Typography, Progress, Divider, Timeline, Spin, Space, Avatar, Table, Badge } from 'antd';
 import {
   WalletOutlined,
   CheckCircleOutlined,
@@ -13,7 +13,8 @@ import {
 } from '@ant-design/icons';
 import { api } from '../../services/api';
 
-const { Title, Text } = Typography;
+// Bổ sung Paragraph từ Typography để dùng cho phần tin tức
+const { Title, Text, Paragraph } = Typography;
 
 interface FeeObligation {
   id: number;
@@ -32,6 +33,8 @@ interface NotificationItem {
   content: string;
   type: string;
   createdDate: string;
+  imageUrl?: string;
+  status?: string;
 }
 
 interface Resident {
@@ -57,10 +60,24 @@ interface HouseholdInfo {
   vehicleCount?: number;
 }
 
+// Hàm helper để lấy màu tag theo loại thông báo
+const getTypeConfig = (type: string): { color: string; text: string } => {
+  const typeMap: Record<string, { color: string; text: string }> = {
+    'INFO': { color: 'blue', text: 'Thông tin' },
+    'GENERAL': { color: 'cyan', text: 'Thông báo' },
+    'FEE': { color: 'gold', text: 'Phí' },
+    'PAYMENT': { color: 'purple', text: 'Thanh toán' },
+    'ALERT': { color: 'red', text: 'Cảnh báo' },
+    'MAINTENANCE': { color: 'orange', text: 'Bảo trì' },
+  };
+  return typeMap[type] || { color: 'default', text: type };
+};
+
 const ResidentDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [fees, setFees] = useState<FeeObligation[]>([]);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [newsNotifications, setNewsNotifications] = useState<NotificationItem[]>([]);
   const [household, setHousehold] = useState<HouseholdInfo | null>(null);
   const [residents, setResidents] = useState<Resident[]>([]);
   const [residentCount, setResidentCount] = useState(0);
@@ -91,7 +108,8 @@ const ResidentDashboard: React.FC = () => {
         const publishedNotifs = (notifRes.data || []).filter(
           (n: NotificationItem & { status: string }) => n.status === 'PUBLISHED'
         );
-        setNotifications(publishedNotifs.slice(0, 5)); // Lấy 5 thông báo mới nhất
+        setNotifications(publishedNotifs.slice(0, 5)); // Lấy 5 thông báo mới nhất cho timeline
+        setNewsNotifications(publishedNotifs.slice(0, 8)); // Lấy 8 thông báo cho phần tin tức
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -111,6 +129,16 @@ const ResidentDashboard: React.FC = () => {
   const unpaidFees = fees.filter(f => f.status === 'UNPAID');
   const paidFees = fees.filter(f => f.status === 'PAID');
   const paymentRate = totalExpected > 0 ? (totalPaid / totalExpected) * 100 : 0;
+
+  // Ảnh mặc định khi thông báo không có ảnh
+  const defaultImages: Record<string, string> = {
+    'INFO': 'https://images.unsplash.com/photo-1586339949916-3e9457bef6d3?q=80&w=1470&auto=format&fit=crop',
+    'GENERAL': 'https://images.unsplash.com/photo-1557804506-669a67965ba0?q=80&w=1474&auto=format&fit=crop',
+    'FEE': 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?q=80&w=1472&auto=format&fit=crop',
+    'PAYMENT': 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=1470&auto=format&fit=crop',
+    'ALERT': 'https://images.unsplash.com/photo-1582139329536-e7284fece509?q=80&w=1480&auto=format&fit=crop',
+    'MAINTENANCE': 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=1470&auto=format&fit=crop',
+  };
 
   if (loading) {
     return (
@@ -381,6 +409,105 @@ const ResidentDashboard: React.FC = () => {
           ]}
         />
       </Card>
+
+      {/* --- START: Phần Thông báo & Tin tức --- */}
+      <Row gutter={16} style={{ marginTop: 24 }}>
+        <Col span={24}>
+          <Card 
+            title={<span><BellOutlined style={{ marginRight: 8, color: '#faad14' }} />Thông báo & Tin tức</span>} 
+            extra={<a href="/resident/notifications">Xem tất cả</a>}
+            variant="borderless"
+            styles={{ body: { padding: '24px' } }}
+          >
+            {newsNotifications.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: 40 }}>
+                <Text type="secondary">Không có thông báo nào</Text>
+              </div>
+            ) : (
+              <div style={{ paddingRight: '0' }}> 
+                <List
+                  grid={{
+                    gutter: 24,
+                    xs: 1,   // Điện thoại: 1 cột
+                    sm: 2,   // Tablet nhỏ: 2 cột
+                    md: 3,   // Tablet/Laptop: 3 cột
+                    lg: 3,
+                    xl: 4,   // Màn hình lớn: 4 cột
+                    xxl: 4,
+                  }}
+                  dataSource={newsNotifications}
+                  renderItem={(item) => {
+                    const typeConfig = getTypeConfig(item.type);
+                    const imageUrl = item.imageUrl || defaultImages[item.type] || defaultImages['INFO'];
+                    return (
+                      <List.Item>
+                        {/* Dùng Badge.Ribbon để hiển thị Category ở góc phải ảnh */}
+                        <Badge.Ribbon text={typeConfig.text} color={typeConfig.color}>
+                          <Card
+                            hoverable
+                            style={{ height: '100%', overflow: 'hidden' }}
+                            cover={
+                              <div style={{ height: 180, overflow: 'hidden' }}>
+                                <img 
+                                  alt={item.title} 
+                                  src={imageUrl} 
+                                  style={{ 
+                                    width: '100%', 
+                                    height: '100%', 
+                                    objectFit: 'cover', 
+                                    transition: 'transform 0.3s'
+                                  }}
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).src = defaultImages['INFO'];
+                                  }}
+                                />
+                              </div>
+                            }
+                            styles={{ 
+                              body: { 
+                                padding: '16px', 
+                                display: 'flex', 
+                                flexDirection: 'column', 
+                                height: 'calc(100% - 180px)' 
+                              } 
+                            }}
+                          >
+                            <div style={{ marginBottom: 8 }}>
+                              <Text type="secondary" style={{ fontSize: 12 }}>📅 {item.createdDate}</Text>
+                            </div>
+
+                            <div style={{ 
+                              fontWeight: 600, 
+                              fontSize: 16, 
+                              marginBottom: 8, 
+                              height: 48, 
+                              overflow: 'hidden', 
+                              textOverflow: 'ellipsis', 
+                              display: '-webkit-box', 
+                              WebkitLineClamp: 2, 
+                              WebkitBoxOrient: 'vertical' 
+                            }}>
+                              {item.title}
+                            </div>
+                            
+                            <Paragraph 
+                              ellipsis={{ rows: 3, expandable: false }} 
+                              style={{ color: '#595959', fontSize: 14, marginBottom: 0, flex: 1 }}
+                            >
+                              {item.content}
+                            </Paragraph>
+                          </Card>
+                        </Badge.Ribbon>
+                      </List.Item>
+                    );
+                  }}
+                />
+              </div>
+            )}
+          </Card>
+        </Col>
+      </Row>
+      {/* --- END: Phần Thông báo & Tin tức --- */}
     </div>
   );
 };
